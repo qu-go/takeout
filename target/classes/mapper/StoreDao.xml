@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xinzhou.dao.StoreDao">
+<!--根据店铺id获取店铺得商品类型-->
+    <select id="selectStoreTypeList" parameterType="int" resultType="com.xinzhou.entity.GoodsType">
+        select distinct a.id,a.type
+        from tb_goods_type as a inner join (select * from tb_goods where goods_store_id =#{id}) as b on  a.id=b.goods_type;
+    </select>
+    <!--根据店铺id获取店铺-->
+    <select id="selectOneById" parameterType="int" resultType="com.xinzhou.entity.Store">
+        select * from tb_store where id=#{id};
+
+    </select>
+</mapper>

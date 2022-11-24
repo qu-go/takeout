@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xinzhou.dao.GoodsDao">
+
+
+
+    <select id="getGoodsByQuery" parameterType="int" resultType="com.xinzhou.entity.Goods">
+        select
+               * from tb_goods order by `goods_score` desc limit #{currentNum},#{pageSize}   ;
+    </select>
+
+    <select id="getGoodsByTypeId" parameterType="int" resultType="com.xinzhou.entity.Goods">
+
+        select a.id,a.goods_name,a.goods_store_id,a.goods_type,a.goods_price,b.type,a.goods_icon,a.goods_sell_number,a.goods_score,c.store_name,c.store_location
+        from
+            tb_goods as a
+                inner join
+            tb_goods_type as b
+            on a.goods_type = b.id
+                inner join
+            tb_store as c
+            on a.goods_store_id=c.id
+        where a.goods_type=#{id}
+        order by a.goods_score desc
+            limit #{currentNum},#{pageSize};
+    </select>
+
+<!--    按照店铺id和商品类型id查询goods-->
+    <select id="getGoodsListByTwoId" resultType="com.xinzhou.entity.Goods" parameterType="int">
+        select *
+        from tb_goods
+        where goods_store_id = #{store_id} and goods_type = #{type};
+    </select>
+</mapper>
