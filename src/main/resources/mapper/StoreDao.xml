@@ -9,7 +9,27 @@
     </select>
     <!--根据店铺id获取店铺-->
     <select id="selectOneById" parameterType="int" resultType="com.xinzhou.entity.Store">
-        select * from tb_store where id=#{id};
+        select * from tb_store where id = #{id};
 
     </select>
+    <!--根据店铺id获取店铺名字-->
+    <select id="selectStoreName" parameterType="int" resultType="String">
+        select store_name from tb_store where id = #{id};
+
+    </select>
+
+    <update id="updateStore" parameterType="com.xinzhou.entity.Store">
+
+        update `tb_store`
+                <set>
+                    <if test="store_name !=null"> store_name = #{store_name} ,</if>
+                    <if test="store_type !=null"> store_type = #{store_type} ,</if>
+                    <if test="store_phone !=null"> store_phone = #{store_phone} ,</if>
+                    <if test="store_principal !=null"> store_principal = #{store_principal} ,</if>
+                    <if test="store_location !=null"> store_location = #{store_location} ,</if>
+                    <if test="store_icon !=null"> store_icon = #{store_icon} ,</if>
+                </set>
+            where
+                id = #{id}
+    </update>
 </mapper>

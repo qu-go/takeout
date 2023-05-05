@@ -27,6 +27,12 @@ public class Result {
     public static Result ok(Object data,Integer total){
         return new Result(true, null,null,null, data, total);
     }
+    public static Result ok(Integer code,Object data){
+        return new Result(true, code,null,null, data, null);
+    }
+    public static Result ok(Integer code,Integer total){
+        return new Result(true, code,null,null, null, total);
+    }
     public static Result ok(List<?> data, Integer total){
         return new Result(true, null,null,null, data, total);
     }

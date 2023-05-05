@@ -34,6 +34,17 @@ public class WebSocketHandShakeInterceptor implements HandshakeInterceptor {
     public boolean beforeHandshake(ServerHttpRequest serverHttpRequest, ServerHttpResponse serverHttpResponse, WebSocketHandler webSocketHandler, Map<String, Object> map) throws Exception {
 
 
+        //TODO
+        //1. 在用户登录成功后存储token，设置过期时间
+        //2. 然后给登录成功的用户建立ws连接，建立连接根据自己的身份携带参数useid和storeid
+        //3. 在拦截器中在协议握手前验证token的正确性，正确就放行
+        //4. 将id信息和token放入map里面传递
+        //5.保存用户在线信息
+        //6.当建立起连接的时候用户的在线人数加一
+        //7. 用户发起订单给商家，订单创建成功，发送信息给商家
+        //8. 商家处理订单，然后接收订单，发送信息给指定的用户
+        //9. 通过message进行通信
+
         if (serverHttpRequest instanceof ServletServerHttpRequest) {
             ServletServerHttpRequest request = (ServletServerHttpRequest) serverHttpRequest;
             //通过url传参的方式
@@ -45,7 +56,6 @@ public class WebSocketHandShakeInterceptor implements HandshakeInterceptor {
                 serverHttpResponse.setStatusCode(HttpStatus.NON_AUTHORITATIVE_INFORMATION);
                 return false;
             }
-            System.out.println(token1);
             //redis取出token
             Map<Object, Object> userDTO = stringRedisTemplate.opsForHash().entries(RedisConstant.LOGIN_TOKEN_KEY + token1);
             if (userDTO == null) {

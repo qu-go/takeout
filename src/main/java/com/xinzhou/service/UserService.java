@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.jws.soap.SOAPBinding;
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
 
 
 public interface UserService {
@@ -17,9 +18,17 @@ public interface UserService {
 
     Result register(User user);
 
-    Result uploadPic(MultipartFile imgFile);
+    Result uploadPic(MultipartFile imgFile) throws IOException;
 
     Result modifyPwd(LoginFormDTO loginFormDTO);
 
     Result logout(String token);
+
+    Result getInfoByToken(String token);
+
+    Result userDayCount(String date);
+
+    Result userCountService();
+
+    Result userListService(Integer offset, Integer limit);
 }

@@ -17,6 +17,6 @@ public interface ShoppingCarDao {
     @Delete("delete from tb_shop_car where user_id=#{userID} and good_id=#{goodsId} ;")
     int  delete(@Param("userID") Integer userID, @Param("goodsId") Integer goodsId);
 
-    @Insert("insert into `tb_shop_car` values(null,#{car.user_id},#{car.good_id},#{car.good_num},#{car.status},now(),now())")
+    @Insert("insert into `tb_shop_car` values(null,#{userId},#{goodId},#{goodNum},#{status},now(),now())")
     int addCar(ShoppingCar car);
 }

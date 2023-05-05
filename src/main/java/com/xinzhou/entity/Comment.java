@@ -22,7 +22,9 @@ public class Comment implements Serializable {
     public Integer store_id;
     public Integer user_id;
     public String goods_name;
+    public String image;
     public String text;
+    public Integer score;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     public LocalDateTime create_time;
     public UserDTO userDTO;

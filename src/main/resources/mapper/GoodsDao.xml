@@ -7,9 +7,8 @@
 
     <select id="getGoodsByQuery" parameterType="int" resultType="com.xinzhou.entity.Goods">
         select
-               * from tb_goods order by `goods_score` desc limit #{currentNum},#{pageSize}   ;
+               * from tb_goods where status=0  order by `goods_score` desc limit #{currentNum},#{pageSize}   ;
     </select>
-
     <select id="getGoodsByTypeId" parameterType="int" resultType="com.xinzhou.entity.Goods">
 
         select a.id,a.goods_name,a.goods_store_id,a.goods_type,a.goods_price,b.type,a.goods_icon,a.goods_sell_number,a.goods_score,c.store_name,c.store_location
@@ -21,7 +20,7 @@
                 inner join
             tb_store as c
             on a.goods_store_id=c.id
-        where a.goods_type=#{id}
+        where a.goods_type=#{id} and a.status=0
         order by a.goods_score desc
             limit #{currentNum},#{pageSize};
     </select>
@@ -30,6 +29,19 @@
     <select id="getGoodsListByTwoId" resultType="com.xinzhou.entity.Goods" parameterType="int">
         select *
         from tb_goods
-        where goods_store_id = #{store_id} and goods_type = #{type};
+        where goods_store_id = #{store_id} and goods_type = #{type} and status =0;
     </select>
+
+    <update id="updateGood" parameterType="com.xinzhou.entity.Goods" >
+        update `tb_goods`
+                <set>
+
+                    <if test="goods_name!=null">`goods_name` = #{goods_name} ,</if>
+                    <if test="goods_price!=null">`goods_price` = #{goods_price},</if>
+                    <if test="goods_type!=null">`goods_type` = #{goods_type},</if>
+                    <if test="goods_icon!=null">`goods_icon` = #{goods_icon}</if>
+                </set>
+                where
+                    `id` = #{id};
+    </update>
 </mapper>

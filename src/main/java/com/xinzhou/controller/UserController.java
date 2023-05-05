@@ -31,10 +31,15 @@ public class UserController {
 
         @PostMapping("/login")
         public Result login(@RequestBody LoginFormDTO loginFormDTO, HttpSession session){
+
                 return userService.login(loginFormDTO, session);
         }
 
+        @GetMapping("/info")
+        public Result getUserInfoByToken(String token){
+                return userService.getInfoByToken(token);
 
+        }
         @PostMapping("/register")
         public Result register(@RequestBody User user){
                 return userService.register(user);
@@ -43,7 +48,13 @@ public class UserController {
 
         @PostMapping ("/upload")
         public Result uploadPic(@RequestParam("image") MultipartFile imgFile){
-               return userService.uploadPic(imgFile);
+                Result result;
+                try{
+                        result=userService.uploadPic(imgFile);
+                }catch (Exception e){
+                        return Result.fail(303,e.getMessage());
+                }
+               return result;
         }
 
         @GetMapping("/getMe")
@@ -64,6 +75,24 @@ public class UserController {
                 String token = request.getHeader("Authorization");
                 return userService.logout(token);
         }
+
+        @GetMapping(value = "/add/{date}/count")
+        public Result userDayCount(@PathVariable String date){
+                return userService.userDayCount(date);
+        }
+
+        @GetMapping(value = "/users/count")
+        public Result userCount(){
+                return userService.userCountService();
+        }
+
+        @GetMapping(value = "/list")
+        public Result getUserList(Integer offset,Integer limit){
+                return userService.userListService(offset,limit);
+        }
+
+
+
 
 
 }

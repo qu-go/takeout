@@ -3,6 +3,7 @@ package com.xinzhou.utils;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xinzhou.dto.UserDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -13,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 public class RefreshInterceptor implements HandlerInterceptor {
     public StringRedisTemplate stringRedisTemplate;
 
@@ -24,17 +26,15 @@ public class RefreshInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         //todo:用redis登陆校验
         //1. 取出token，头
-        String token = request.getHeader("authorization");
+        String token = request.getHeader("Authorization");
         //2. 判断是否为空
         //2.1 为空直接放行
-
         if (StrUtil.isBlank(token)){
             return true;
         }
 
         //2.2 不为空在redis取出useMAp
         Map<Object, Object> userMap = stringRedisTemplate.opsForHash().entries(RedisConstant.LOGIN_TOKEN_KEY + token);
-        System.out.println(userMap.get("id"));
         //3.判断取出的useMap
         //3.1 如果为空直接放行
         if (userMap.isEmpty()){

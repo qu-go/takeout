@@ -27,8 +27,6 @@ public class QiniuUtils {
             Response response = uploadManager.put(filePath, "pic/"+fileName, upToken);
             //解析上传成功的结果
             DefaultPutRet putRet = new Gson().fromJson(response.bodyString(), DefaultPutRet.class);
-            System.out.println(putRet.key);
-            System.out.println(putRet.hash);
         } catch (QiniuException ex) {
             Response r = ex.response;
             System.err.println(r.toString());

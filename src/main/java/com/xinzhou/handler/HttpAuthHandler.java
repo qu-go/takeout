@@ -34,8 +34,8 @@ public class HttpAuthHandler extends TextWebSocketHandler {
             session.close();
         }
         hashMap.put(key, session);
+        System.out.println(key);
         addOnlineCount();
-        System.out.println(getOnlineCount());
     }
 
 
@@ -79,7 +79,7 @@ public class HttpAuthHandler extends TextWebSocketHandler {
     }
 
     //发送消息给指定用户
-    public void sendToUser(String receiveKey,String mess) throws IOException {
+    public  void sendToUser(String receiveKey,String mess) throws IOException {
         if (isOnline(receiveKey)) {
             try {
                 getSession(receiveKey).sendMessage(new TextMessage(mess));

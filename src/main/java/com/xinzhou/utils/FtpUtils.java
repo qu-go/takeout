@@ -34,16 +34,12 @@ public class FtpUtils {
             // 如果采用默认端口，可以使用ftp.connect(host)的方式直接连接FTP服务器
             ftp.login(username, password);// 登录
             reply = ftp.getReplyCode();
-            System.out.println(reply);
             if (!FTPReply.isPositiveCompletion(reply)) {
                 ftp.disconnect();
-                System.out.println("1");
                 return result;
             }
             //切换到上传目录
-            System.out.println(basePath);
             if (!ftp.changeWorkingDirectory(basePath)) {
-                System.out.println("2");
                 //如果目录不存在创建目录
                 String[] dirs = filePath.split("/");
                 String tempPath = basePath;
@@ -65,16 +61,16 @@ public class FtpUtils {
             ftp.setFileType(FTP.BINARY_FILE_TYPE);
 
             //设置为被动模式
-//            ftp.enterLocalPassiveMode();
+            ftp.enterLocalPassiveMode();
             //上传文件
             if (!ftp.storeFile(filename, input)) {
-                System.out.println("3");
                 return result;
             }
             input.close();
             ftp.logout();
             result = true;
         } catch (IOException e) {
+            System.out.println(e.getMessage());
             e.printStackTrace();
         } finally {
             if (ftp.isConnected()) {

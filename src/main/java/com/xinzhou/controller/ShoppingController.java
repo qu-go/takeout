@@ -28,6 +28,7 @@ public class ShoppingController {
     }
     @PostMapping("/add/car")
     public Result addCarController(@RequestBody List<ShoppingCar> cars){
+        System.out.println(cars);
         return service.addService(cars);
     }
 }

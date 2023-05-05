@@ -7,7 +7,7 @@ import org.springframework.web.socket.config.annotation.*;
 
 //@Configuration
 //@EnableWebSocketMessageBroker
-public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+public class  WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     //配置基站节点
     @Override

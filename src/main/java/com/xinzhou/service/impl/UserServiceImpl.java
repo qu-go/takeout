@@ -10,40 +10,31 @@ import com.xinzhou.entity.User;
 import com.xinzhou.dao.UserDao;
 import com.xinzhou.service.UserService;
 import com.xinzhou.utils.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class UserServiceImpl implements UserService {
-    @Value("${FTP.ADDRESS}")
-    private String host;
-    // 端口
-    @Value("${FTP.PORT}")
-    private int port;
-    // ftp用户名
-    @Value("${FTP.USERNAME}")
-    private String userName;
-    // ftp用户密码
-    @Value("${FTP.PASSWORD}")
-    private String passWord;
-    // 文件在服务器端保存的主目录
-    @Value("${FTP.BASEPATH}")
-    private String basePath;
-    // 访问图片时的基础url
-    @Value("${IMAGE.BASE.URL}")
-    private String baseUrl;
-
     @Autowired
     private UserDao userDao;
     @Resource
@@ -66,8 +57,10 @@ public class UserServiceImpl implements UserService {
         }
         //存在，将user信息转化为不敏感得userDTO
         UserDTO userDTO = BeanUtil.copyProperties(user, UserDTO.class);
-       Map<String,Object> userDTOMap= BeanUtil.beanToMap(userDTO,new HashMap<>(), CopyOptions.create()
-                .setIgnoreNullValue(true).setFieldValueEditor((fieldName,fieldValue) -> fieldValue.toString()));
+       Map<String,Object> userDTOMap= BeanUtil.
+               beanToMap(userDTO,new HashMap<>(), CopyOptions.create()
+                .setIgnoreNullValue(true).setFieldValueEditor((fieldName,fieldValue) -> fieldValue!=null ? fieldValue.toString():""));
+
         //生成token
         String  token= UUID.randomUUID().toString();
 
@@ -75,7 +68,7 @@ public class UserServiceImpl implements UserService {
         stringRedisTemplate.opsForHash().putAll(RedisConstant.LOGIN_TOKEN_KEY+token, userDTOMap);
         //设置token的过期时间
         stringRedisTemplate.expire(RedisConstant.LOGIN_TOKEN_KEY+token, RedisConstant.LOGIN_TOKEN_EXPIRE_TIME, TimeUnit.MINUTES);
-        return Result.ok(token);
+        return Result.ok(200,token);
     }
 
     @Override
@@ -101,32 +94,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Result uploadPic(MultipartFile imgFile) {
-        try {
-            //获取图片名
-            String originalFilename = imgFile.getOriginalFilename();
-            //获取最后得点位置
-            int i = originalFilename.lastIndexOf('.');
-            String substring = originalFilename.substring(i);
-            //使用uuid产生名称防止重复
-            String fileName= UUID.randomUUID()+ substring;
-            InputStream inputStream = imgFile.getInputStream();
-            //上传成功存在名字在redis大集合
-            //jedisPool.getResource().sadd(RedisConstant.SETMEAL_PIC_RESOURCES, fileName);
-            FtpUtils.uploadFile(host, port, userName, passWord, basePath, baseUrl, fileName, inputStream);
-            boolean flag = saveIcon(baseUrl + fileName);
-            System.out.println(flag);
-            if (!flag){
-                return Result.fail(403,"保存图片失败");
-            }
-            return Result.ok(baseUrl+fileName);
-
-        }catch (Exception e){
-            System.out.println("fail");
-            return Result.fail(403,"保存图片失败");
+    public Result uploadPic(MultipartFile imgFile) throws IOException {
+        String picUrl = CommonUtil.getPicUrl(imgFile);
+        boolean b = saveIcon(picUrl);
+        if (!b){
+            throw new RuntimeException("保存图片失败");
         }
-
-
+        return Result.ok(picUrl);
     }
 
     @Override
@@ -156,6 +130,50 @@ public class UserServiceImpl implements UserService {
         return Result.ok();
     }
 
+    @Override
+    public Result getInfoByToken(String token) {
+        if (token.length()<=0){
+            return Result.fail(402,"token格式错误");
+        }
+        Map<Object, Object> userMap = stringRedisTemplate.opsForHash().entries(RedisConstant.LOGIN_TOKEN_KEY + token);
+        if (userMap.isEmpty()){
+            return Result.fail(403,"token失效");
+        }
+        UserDTO userDTO = BeanUtil.fillBeanWithMap(userMap, new UserDTO(), false);
+        // ['admin'] or ,['developer','editor']
+        String[] roles = new String[]{"admin"};
+        userDTO.setRoles(roles);
+        return Result.ok(200,userDTO);
+    }
+
+    @Override
+    public Result userDayCount(String date) {
+        if (StringUtils.isEmpty(date)){
+            return Result.fail(420,"日期不能为空");
+        }
+        int result = userDao.getNewInsertUser(CommonUtil.getStartDay(date), CommonUtil.getNextDay(date));
+        return Result.ok(200,result);
+    }
+
+    @Override
+    public Result userCountService() {
+        int res= userDao.selectAll();
+        return Result.ok(200,res);
+    }
+
+    @Override
+    public Result userListService(Integer offset, Integer limit) {
+        UserDTO userDTO = UserHolder.get();
+        if (userDTO==null){
+            return Result.fail(402,"重新登录");
+        }
+        List<User> users =userDao.selectList(offset,limit);
+        List<UserDTO> res = users.stream().map(user -> BeanUtil.copyProperties(user, UserDTO.class)).collect(Collectors.toList());
+        return Result.ok(200,res);
+    }
+
+
+
     private boolean createUser(User user) {
         user.setIcon(ResultConstant.DEFAULT_ICON);
         user.setNick_name(ResultConstant.DEFAULT_NICK_NAME_PREFIX+ RandomUtil.randomString(5));
@@ -170,7 +188,6 @@ public class UserServiceImpl implements UserService {
         if (userDTO==null){
             return false;
         }
-        System.out.println(userDTO);
         userDTO.setIcon(fileName);
         int result=userDao.saveIconByUserDTO(userDTO);
         return result>0;

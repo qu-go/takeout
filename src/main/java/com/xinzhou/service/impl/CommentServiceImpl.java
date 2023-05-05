@@ -10,6 +10,7 @@ import com.xinzhou.dto.Result;
 import com.xinzhou.dto.UserDTO;
 import com.xinzhou.entity.*;
 import com.xinzhou.service.CommentsService;
+import com.xinzhou.utils.UserHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,7 +42,7 @@ public class CommentServiceImpl implements CommentsService {
         //查找该店铺的评论
         List<Comment> comments = dao.selectByQuery(storeId, page*10, pageSize);
         if (comments.size()<=0){
-            return Result.ok("暂无数据");
+            return Result.fail(303,"暂无数据");
         }
         //赋值名字
         List<Comment> collect = comments.stream()
@@ -53,5 +54,16 @@ public class CommentServiceImpl implements CommentsService {
                 .collect(Collectors.toList());
         commentResponse.setCommentList(collect2);
         return Result.ok(commentResponse,comments.size());
+    }
+
+    @Override
+    public Result addCommentService(Comment comment) {
+        if (UserHolder.get()==null) {
+            return Result.fail(401,"请重新登录");
+        }
+        comment.setUser_id(UserHolder.get().getId());
+        if ( dao.addOne(comment) <=0) throw new RuntimeException("添加失败");
+        //dao.addOne(comment);
+        return Result.ok();
     }
 }

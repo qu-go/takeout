@@ -67,9 +67,7 @@ public class LocationServiceImpl implements LocationService {
             //先把状态都变成默认
             dao.updateStatusDefault(userDTO.getId());
         }
-        System.out.println(userDTO.getId());
         location.setUser_id(userDTO.getId());
-        System.out.println(location);
         return dao.insert(location) >0 ? Result.ok() : Result.fail(202,"添加失败");
     }
 }
